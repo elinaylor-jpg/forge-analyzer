@@ -767,6 +767,12 @@
       </div>
     </div>
 
+
+    <div class="form-group">
+      <label class="form-label">Prospect Name (optional)</label>
+      <input type="text" class="form-input" id="prospect-name-input" placeholder="e.g. Baldemar — auto-detected if blank">
+    </div>
+
     <div class="form-group">
       <label class="form-label">Paste Transcript</label>
       <textarea class="form-input" id="transcript-input" rows="8" placeholder="Paste the call transcript here..." style="resize:vertical;line-height:1.6"></textarea>
@@ -1051,6 +1057,7 @@ async function analyzeCall() {
   const type = document.getElementById('call-type').value;
   const closer = document.getElementById('closer-select').value;
   const transcript = document.getElementById('transcript-input').value.trim();
+  const manualName = document.getElementById('prospect-name-input') && document.getElementById('prospect-name-input').value.trim();
   const link = document.getElementById('drive-link').value.trim();
 
   if (!type) return notify('Select a call type', 'error');
@@ -1066,12 +1073,12 @@ async function analyzeCall() {
 
     currentAnalysis = {
       id: Date.now().toString(),
-      prospectName: analysis.prospectName || 'Unknown',
+      prospectName: manualName || analysis.prospectName || 'Unknown',
       closer,
       type,
       link,
       date: new Date().toLocaleDateString(),
-      analysis: analysis.sections,
+      analysis: analysis.sections || analysis.analysis || [],
       summary: analysis.summary
     };
 
@@ -1309,6 +1316,7 @@ function resetAnalyze() {
   currentAnalysis = null;
   document.getElementById('analyze-result').style.display = 'none';
   document.getElementById('transcript-input').value = '';
+  const pni = document.getElementById('prospect-name-input'); if(pni) pni.value = '';
   document.getElementById('drive-link').value = '';
   document.getElementById('call-type').value = '';
   document.getElementById('closer-select').value = '';
