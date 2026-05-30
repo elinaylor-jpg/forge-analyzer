@@ -1212,7 +1212,7 @@ ${transcript.substring(0, 12000)}`;
   });
 
   const data = await response.json();
-  const text = data.content.map(i => i.text || '').join('');
+  const text = data.content ? data.content.map(i => i.text || '').join('') : (data.body || '');
   const clean = text.replace(/```json|```/g, '').trim();
   return JSON.parse(clean);
 }
