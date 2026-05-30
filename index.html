@@ -1219,6 +1219,7 @@ ${transcript.substring(0, 12000)}`;
   });
 
   const raw = await response.text();
+  console.log("RAW:", raw.substring(0,500));
   let text = '';
   try {
     const data = JSON.parse(raw);
