@@ -1146,42 +1146,143 @@ function parseTimedText(xml) {
 async function analyzeWithClaude(transcript, callType) {
   const isWithSetter = callType === 'closer_with_setter';
 
-  const prompt = `Analyze this sales call. Return ONLY a JSON object. No text before or after. No markdown.
+  const recapSection = `RECAP (Closer with Setter only):
+The closer should briefly acknowledge the prospect's situation at the start — mention their problem and maybe one other detail. Does not need to be detailed or word-for-word accurate.
+GREEN: Closer references the prospect's problem or goal in any way — even briefly — showing they know why the prospect is on the call
+YELLOW: Very generic opener that barely shows any context — like only saying "I know you want to grow your business" with nothing specific
+RED: Zero acknowledgment — jumped straight into questions with no reference to prior context at all`;
 
-Call type: ${isWithSetter ? 'Closer with Setter' : 'Closer without Setter'}
+  const intentSection = `INTENT STAGE:
+OPENER: Did the call start casually and naturally?
+GREEN: Relaxed, conversational, prospect felt at ease
+YELLOW: Slightly stiff but not robotic
+RED: Immediately business-focused, robotic, or formal with no warmth
 
-${isWithSetter ? `Evaluate these sections (set skip:true for Intent Stage and Logical Certainty):
-- RECAP: Did closer acknowledge prospect's situation/problem at start?
-- EMOTIONAL CERTAINTY: See criteria below
-- PITCH & CLOSE: See criteria below` : `Evaluate these sections (set skip:true for Recap):
-- INTENT STAGE: Casual opener + got overarching goal?
-- LOGICAL CERTAINTY: Current strategy + specific problem + expanded pain?
-- EMOTIONAL CERTAINTY: See criteria below
-- PITCH & CLOSE: See criteria below`}
+OVERARCHING GOAL: Did the closer find out the prospect's main goal?
+GREEN: Clear goal established — more listings, grow business, more income, more leads, replace job, more freedom, consistent pipeline. Even somewhat general goals like "grow my business" count if something specific came out of it
+YELLOW: Very vague goal like "just grow" or "do better" that was never probed at all
+RED: No goal established at all`;
 
-EMOTIONAL CERTAINTY criteria:
-1. RATIONAL: Did closer ask why prospect wants advanced help vs continuing current approach? Good answer = faster results, need structure, current way not working
-2. WHAT PREVENTED YOU: Did closer ask what stopped prospect from getting help sooner? Did they get a real answer?
-3. BELIEF CHANGE: Did closer challenge or reframe the prevented answer? Good = prospect gave strong shifted answer or acknowledged old belief was wrong
-4. FUTURE PACE: Did prospect share 2+ specific things that would be different if problem solved? Vague = yellow, none = issue
-5. CONSEQUENCE: Did prospect acknowledge specific consequences of not changing? Vague = yellow, none = issue
+  const logicalSection = `LOGICAL CERTAINTY:
+CURRENT STRATEGY: Did the closer find out what the prospect is doing NOW to achieve their goal?
+GREEN: Specific current approach identified — referrals, open houses, cold calling, sphere of influence, etc.
+YELLOW: General answer not probed further
+RED: Never asked or answered
 
-PITCH & CLOSE criteria:
-1. COMMITMENT: Did closer get prospect to say they won't settle for current situation?
-2. WHY NOW: Did closer challenge why act now vs wait? Flag if missing.
-3. RESPONSIBILITY: Did closer establish it is prospect's responsibility?
+PROBLEM/CATALYST: Did a real specific problem surface? The closer should ask what changed or what is not working.
+GREEN: Specific problem — inconsistent referrals, open houses not generating enough, no structure on calls, not confident with objections, can't rely on market
+YELLOW: Somewhat vague problem not fully explored
+RED: Only vague answers like "I just want to grow" with nothing more specific — or no problem surfaced at all
 
-Rating: "good" = strong, "yellow" = weak/vague, "issue" = missing or bad
+EXPAND THE PAIN: Did the closer go deeper on the problem? The goal is to get the impact — how has the problem affected them?
+The closer does not need to use all three of these — they are principles not a checklist:
+- "What do you mean" or similar — used when the answer is vague and needs clarification
+- "How long" — how long has this been going on
+- Impact — getting them to realize how the problem has affected them, e.g. "how many deals were you doing before vs now?" or "how has that impacted your business?" — any question that reveals the before/after gap
+GREEN: Closer got the prospect to reveal the real impact of their problem — before vs after, specific numbers, or emotional weight of the situation
+YELLOW: Some probing happened but the full impact was not established
+RED: Accepted the problem answer and moved on with no follow-up at all`;
 
-For each item include a short quote from the transcript as evidence.
+  const emotionalSection = `EMOTIONAL CERTAINTY:
+NOTE: The rational question always comes BEFORE what prevented you. If they appear out of order that is worth noting.
 
-Return this exact JSON structure:
-{"prospectName":"[name from transcript]","sections":[{"title":"Recap","skip":${!isWithSetter},"items":[{"type":"good","text":"observation - quote"}]},{"title":"Intent Stage","skip":${isWithSetter},"items":[{"type":"good","text":"observation - quote"}]},{"title":"Logical Certainty","skip":${isWithSetter},"items":[{"type":"good","text":"observation - quote"}]},{"title":"Emotional Certainty","items":[{"type":"good","text":"observation - quote"}]},{"title":"Pitch & Close","items":[{"type":"good","text":"observation - quote"}]}],"summary":["issue1","issue2","issue3"]}
+RATIONAL: Did the closer ask why the prospect is looking for outside/advanced help rather than continuing on their own?
+The goal is to get the prospect to say that getting help will get them to their goals faster — more efficiently, with accountability, with structure they cannot build alone.
+GREEN: Prospect clearly said getting help would be more efficient or faster — "I'll get there faster," "need accountability," "tired of figuring it out alone," "want to shortcut the learning curve," "can't keep guessing on my own"
+YELLOW: Vague answer like "just wanted to see what's out there" or "thought it might help" — not specific enough about WHY help is better
+RED: Topic never came up at all
+
+WHAT PREVENTED YOU: Did the closer ask what stopped the prospect from getting help sooner?
+GREEN: Real honest answer surfaced — did not have time, did not know where to start, was not sure it would work, other priorities got in the way
+YELLOW: Surface-level answer not probed
+RED: Never asked at all
+
+BELIEF CHANGE: After what prevented you, did the closer change the prospect's belief about that blocker?
+Two valid paths — judge on the OUTCOME not the method:
+PATH 1 — WHAT SHIFTED: Closer asks what is different now, prospect gives strong answer — "I hit a breaking point," "I need to prioritize this now," "I am ready to commit," "I cannot keep doing this alone"
+PATH 2 — REFRAME: Closer challenges the belief with a perspective or analogy, then asks what needs to change — and prospect agrees their old belief was wrong and says what needs to change
+IMPORTANT: Any question that gets the prospect to challenge their own thinking counts — "is it worth keeping the same mindset," "has that belief served you," "what needs to change," "what is different now" — all valid
+Do NOT confuse commitment questions used in belief change with the actual Pitch and Close commitment — they are different
+GREEN: Prospect clearly agreed their old belief was wrong OR gave a strong reason why now is different — the belief visibly shifted
+YELLOW: Some attempt was made but prospect's answer was still soft or uncommitted
+RED: Closer accepted the prevented answer and moved on with no challenge, reframe, or follow-up of any kind
+
+FUTURE PACE (GOALS): Three steps must happen — generic goal, add details, make them imagine:
+Step 1 — Generic goal: prospect mentions something like "take care of my family" or "have more freedom"
+Step 2 — Add details: closer asks what that actually looks like — "what would you do with your family?" "how much money?" "where would you go?" — getting specific tangible details
+Step 3 — Make them imagine personally: closer asks what accomplishing those goals would do for them personally — "stepping into those shoes, what does that mean for you?" — this step is required for green
+GREEN: All three steps — generic goal surfaced, specific details added, AND closer made them imagine what it means personally
+YELLOW: Got a goal and some details but skipped the personal imagination step, or only one specific thing established
+RED: Only vague answers like "I'd be successful" with no details, or goals never came up at all
+
+CONSEQUENCE: Three steps — get specific consequences, add details, make them feel it:
+Step 1 — Get consequences: what happens if nothing changes
+Step 2 — Add details: get specific — losing listings to competitors, another year without hitting targets, family feeling the impact
+Step 3 — Make them feel it: closer asks what that would do for them personally — "how would you feel in those shoes?"
+GREEN: All three steps — specific consequences, details added, AND closer made them feel the emotional weight of staying stuck
+YELLOW: Some consequences mentioned but surface-level, or closer did not make them feel it personally
+RED: Consequences never came up, or prospect seemed unbothered with no specifics
+
+PITCH AND CLOSE:
+Note: Commitment always comes after consequence. Why now comes after commitment. Responsibility comes last.
+
+COMMITMENT: After laying out the consequences, did the closer ask if the prospect is willing to settle for that?
+This is one specific thing — closer essentially says "are you willing to settle for that?" referring to the painful consequences just established
+GREEN: Prospect clearly said no — strong verbal commitment they are not willing to stay where they are
+YELLOW: Soft agreement not fully tied down
+RED: Never asked — closer moved forward without this
+
+WHY NOW: Did the closer challenge why the prospect should act now rather than waiting or putting it off?
+The goal is to get the prospect to give a real reason why this moment is different — not just the new year new me guy who starts a diet on Monday
+GREEN: Closer challenged the timing and prospect gave a real reason why now is the moment — "I've been putting it off too long," "I hit a breaking point," "I cannot keep waiting"
+YELLOW: Timing was touched on but not fully challenged or landed
+RED: Never addressed at all — always flag this if missing
+
+RESPONSIBILITY: Did the closer establish it is the prospect's responsibility to make the change?
+It is not on their wife, their coach, their market, or anyone else — it is on them
+GREEN: Prospect took clear ownership — any version of "it is on me," "I have to make it happen," "it is my responsibility"
+YELLOW: Implied but never explicitly stated
+RED: Never established`;
+
+  const sectionsToEvaluate = isWithSetter
+    ? recapSection + "\n\n" + emotionalSection
+    : intentSection + "\n\n" + logicalSection + "\n\n" + emotionalSection;
+
+  const prompt = `You are a sales call analyst. Analyze the transcript below against the Impact Formula.
+
+CRITICAL RULES:
+- Read the ENTIRE transcript before evaluating anything
+- Judge based on OUTCOMES and ANSWERS — not on specific words or phrasing used
+- For every observation, include a short direct quote from the transcript that supports your judgment
+- Only flag RED if something was genuinely completely absent or clearly failed
+- Use YELLOW for anything that happened but was weak, incomplete, or could have been stronger
+- Use GREEN only when the outcome was clearly and fully achieved
+- Stay locked to what the transcript actually shows — do not infer things that did not happen
+- If you are unsure whether something happened, read the transcript again before flagging it as missing
+
+CALL TYPE: ${isWithSetter ? 'Closer WITH Setter — evaluate: Recap, Emotional Certainty, Pitch and Close' : 'Closer WITHOUT Setter — evaluate: Intent Stage, Logical Certainty, Emotional Certainty, Pitch and Close'}
+
+${sectionsToEvaluate}
+
+Extract the prospect name from the transcript.
+
+Return ONLY this JSON with no other text before or after:
+{
+  "prospectName": "name",
+  "sections": [
+    {"title": "Recap", "skip": ${!isWithSetter}, "items": [{"type": "good|yellow|issue", "text": "what happened — quote from transcript"}]},
+    {"title": "Intent Stage", "skip": ${isWithSetter}, "items": [{"type": "good|yellow|issue", "text": "what happened — quote from transcript"}]},
+    {"title": "Logical Certainty", "skip": ${isWithSetter}, "items": [{"type": "good|yellow|issue", "text": "what happened — quote from transcript"}]},
+    {"title": "Emotional Certainty", "items": [{"type": "good|yellow|issue", "text": "what happened — quote from transcript"}]},
+    {"title": "Pitch & Close", "items": [{"type": "good|yellow|issue", "text": "what happened — quote from transcript"}]}
+  ],
+  "summary": ["top issue 1", "top issue 2", "top issue 3"]
+}
 
 TRANSCRIPT:
-${transcript.substring(0, 10000)}`;
+${transcript.substring(0, 12000)}`;
 
-    const response = await fetch('/.netlify/functions/claude', {
+  const response = await fetch('/.netlify/functions/claude', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
