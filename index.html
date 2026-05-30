@@ -1145,70 +1145,115 @@ function parseTimedText(xml) {
 async function analyzeWithClaude(transcript, callType) {
   const typeLabel = callType === 'closer_with_setter' ? 'Closer call (a Setter already handled logical certainty — only evaluate emotional certainty and pitch/close)' : 'Closer call with no Setter (evaluate logical certainty, emotional certainty, and pitch/close)';
 
-  const prompt = `You are analyzing a sales call against the Impact Formula. Your ONLY job is to identify what was done wrong or missed based on the formula. Do NOT give advice, suggestions, or teach. Do NOT judge based on wording — judge based on whether the answer/outcome was achieved. Only flag issues.
+  const prompt = `You are analyzing a sales call against the Impact Formula. Your ONLY job is to identify what was done wrong or missed based on the formula. Do NOT give advice, suggestions, or teach. Do NOT judge based on wording used — judge ONLY on whether the correct answer/outcome was achieved. Only flag real issues.
+
+CRITICAL RULES:
+- Judge the ANSWER the prospect gave, not the exact words the closer used
+- If the closer got the right outcome through any method, it is correct
+- Only flag something as an issue if the outcome was genuinely missing or weak
+- Stay 100% locked to the Impact Formula below — no outside judgment
 
 CALL TYPE: ${typeLabel}
 
-THE IMPACT FORMULA:
+═══════════════════════════════════════
+THE IMPACT FORMULA — BACKBONE
+═══════════════════════════════════════
 
-INTENT STAGE (all call types):
-- Did they get an overarching goal from the prospect? (e.g. more money, more freedom, replace income, more listings, grow business, more leads)
-- Was the opener casual and natural?
+${callType === 'closer_with_setter' ? `
+RECAP (Closer with Setter only — replaces Intent + Logical Certainty):
+- Did the closer recap the prospect's problem clearly at the start?
+- A good recap shows they understood what the Setter uncovered — the prospect's current situation, what's not working, and why they're on the call
+- Judge: was the problem recapped clearly and specifically? Vague recaps are an issue.
+` : `
+INTENT STAGE:
+- Did the opener feel casual and natural — not robotic or salesy?
+- Did they get the prospect's overarching goal? Good goals: make more money, get more listings, grow business, replace income, more freedom, more leads
+- A vague answer like "just curious" with no real goal = issue
 
-LOGICAL CERTAINTY (ONLY include this section if call type is 'Closer with no Setter'. If call type is 'Closer with Setter', set skip: true and do NOT evaluate this section at all):
-- Did they uncover the current strategy? (what are they doing NOW to achieve their goal)
-- Did they find a real specific problem/catalyst? (not vague like "I want to grow" — a real problem like "referrals are inconsistent" or "open houses aren't keeping me busy")
-- Did they expand the pain? (what do you mean, how long, and some form of impact — getting them to see the gap between before and now)
+LOGICAL CERTAINTY:
+1. CURRENT STRATEGY — Did they uncover what the prospect is doing NOW to achieve their goal? (e.g. referrals, open houses, cold calling, etc.)
+2. HOW LONG — Did they ask how long they've been using that strategy?
+3. PROBLEM/CATALYST — Did they find a real specific problem? Good problems: "referrals are inconsistent," "open houses aren't keeping me busy," "I can't rely on the market." Vague answers like "I just want to grow" = issue
+4. EXPAND THE PAIN — Did they probe deeper? Look for: "what do you mean?", "how long has that been going on?", and some form of impact question that got the prospect to realize the gap between where they were and where they are now
+`}
 
-EMOTIONAL CERTAINTY (all closer calls):
-- Did they pre-handle the DIY objection? (why advanced training/solution vs just doing it themselves or sticking with free stuff)
-- Did they find out what prevented the prospect from getting help before?
-- Did they challenge/reframe that belief? (doesn't have to be "what shifted" — any reframe, analogy, or pattern interrupt that breaks the belief counts)
-- Did they get strong specific goals from future pace? (2-3 specific things that would be different — not vague like "be successful")
-- Did they get strong specific consequences? (what happens if nothing changes — 2-3 specific things)
+EMOTIONAL CERTAINTY:
 
-PITCH & CLOSE (closer calls only):
-- Did they get commitment? (are you willing to settle for that)
-- Did they get responsibility? (whose responsibility is it)
-- Did they get a "why now"? (why not wait, push it off — this is important)
-- Did they pitch 3 pillars tied back to the prospect's specific problems?
-- Did they close on investment?
-- Objection handling: COMING SOON
+1. RATIONAL — Did they ask why the prospect is looking for more advanced help rather than just doubling down on their current strategy / free stuff / brokerage?
+   - The question can be worded many ways — judge on the ANSWER they got
+   - Good answers: "I'll get there faster," "it's more efficient," "I need structure I can't build myself," "I've been trying on my own and it's not working"
+   - Weak/vague answers = issue
 
-First extract the prospect's name from the transcript (usually mentioned early). Then analyze each section.
+2. PRE-HANDLE INTERNAL OBJECTION — Two parts:
+   a. WHAT PREVENTED YOU — Did they ask what stopped the prospect from getting help sooner? Did they get a real honest answer?
+   b. BELIEF CHANGE — Did they either:
+      - Get a strong "what shifted" answer (e.g. "I hit a breaking point," "I need to prioritize this now," "I can't keep doing this alone"), OR
+      - Successfully reframe the belief (e.g. prospect says no time/money → closer reframes it → prospect agrees their belief was wrong and says what needs to change)
+   - Judge on the END RESULT — did the belief change? Not on which method was used.
 
-Respond in this exact JSON format:
+3. FUTURE PACE — Did they get 2-3 specific goals that would be different if the problem was solved?
+   - Good: specific tangible things ("I'd have consistent listings every month," "I wouldn't have to do open houses on weekends," "I'd know exactly what to say on every call")
+   - Bad: vague answers like "I'd be successful" or "things would be better" = issue
+   - Did they make the prospect step into those shoes and feel it personally?
+   - Note: Usain Bolt pre-frame or similar is optional — only judge the quality of answers, not whether the pre-frame was used
+
+4. CONSEQUENCE — Did they get 2-3 specific consequences of NOT changing?
+   - Good: specific tangible things ("I'd keep losing listings to other agents," "I'd still be stressed about where my next check comes from")
+   - Bad: vague answers like "nothing would change" or "it'd be the same" = issue
+   - Did they make the prospect feel those consequences emotionally?
+
+═══════════════════════════════════════
+PITCH & CLOSE:
+═══════════════════════════════════════
+
+1. COMMITMENT — Did they ask "are you willing to settle for that?" or equivalent — getting the prospect to verbally commit they don't want the consequence
+2. WHY NOW — Did they challenge why now vs waiting? (e.g. "there's always the new year new me guy, why draw the line now?") — THIS IS IMPORTANT, flag if missing
+3. RESPONSIBILITY — Did they establish whose responsibility it is to make the change?
+4. PITCH — Did they pitch 3 pillars tied back to the prospect's specific problems mentioned earlier in the call? Each pillar should reference something the prospect actually said.
+5. CLOSE — Did they close on the investment?
+6. Objection Handling: COMING SOON
+
+═══════════════════════════════════════
+
+First extract the prospect's name from the transcript (usually mentioned early).
+
+Respond in this EXACT JSON format only — no extra text:
 {
-  "prospectName": "First name or full name found in transcript",
+  "prospectName": "name from transcript",
   "sections": [
     {
-      "title": "Intent Stage",
-      "items": [
-        {"type": "good|issue|neutral", "text": "what happened"}
-      ]
+      "title": "Recap",
+      "skip": true or false,
+      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
+    },
+    {
+      "title": "Intent Stage", 
+      "skip": true or false,
+      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
     },
     {
       "title": "Logical Certainty",
-      "items": [...],
-      "skip": true/false
+      "skip": true or false,
+      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
     },
     {
       "title": "Emotional Certainty",
-      "items": [...]
+      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
     },
     {
       "title": "Pitch & Close",
-      "items": [...],
+      "items": [{"type": "good|issue|neutral", "text": "specific observation"}],
       "comingSoon": ["Objection Handling"]
     }
   ],
-  "summary": ["key issue 1", "key issue 2", "key issue 3"]
+  "summary": ["top issue 1", "top issue 2", "top issue 3"]
 }
 
-Only include sections relevant to the call type. If logical certainty is skipped (closer with setter), set skip: true.
+For Closer WITH Setter: set skip:true on Intent Stage and Logical Certainty, set skip:false on Recap.
+For Closer WITHOUT Setter: set skip:true on Recap, set skip:false on Intent Stage and Logical Certainty.
 
 TRANSCRIPT:
-${transcript.substring(0, 12000)}`;
+\${transcript.substring(0, 12000)}`;
 
   const response = await fetch('/.netlify/functions/claude', {
     method: 'POST',
