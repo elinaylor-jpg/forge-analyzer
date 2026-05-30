@@ -1228,6 +1228,42 @@ ${transcript.substring(0, 10000)}`;
   throw new Error("Could not parse response. Please try again.");
 }
 
+function renderResult(analysis) {
+  document.getElementById('analyze-loading').style.display = 'none';
+  document.getElementById('analyze-result').style.display = 'block';
+  document.getElementById('analyze-btn').disabled = false;
+  document.getElementById('result-prospect-name').textContent = analysis.prospectName;
+  document.getElementById('result-meta').textContent = analysis.closer + ' · ' + analysis.date;
+  document.getElementById('result-type-badge').textContent = analysis.type === 'closer_with_setter' ? 'Closer + Setter' : 'Closer Only';
+  document.getElementById('result-body').innerHTML = buildResultHTML(analysis);
+}
+
+function buildResultHTML(analysis) {
+  let html = '';
+  const sections = analysis.analysis || analysis.sections || [];
+  const summary = analysis.summary || [];
+  if (summary.length) {
+    html += '<div class="result-section"><div class="section-title">Summary</div>';
+    summary.forEach(function(s) { html += '<div class="feedback-item issue">' + s + '</div>'; });
+    html += '</div>';
+  }
+  sections.forEach(function(section) {
+    if (section.skip) return;
+    html += '<div class="result-section"><div class="section-title">' + section.title + '</div>';
+    if (section.items && section.items.length) {
+      section.items.forEach(function(item) {
+        html += '<div class="feedback-item ' + item.type + '">' + item.text + '</div>';
+      });
+    }
+    html += '</div>';
+  });
+  if (analysis.link) {
+    html += '<div style="margin-top:16px"><a href="' + analysis.link + '" target="_blank" style="color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:2px;text-decoration:none;">Watch Call</a></div>';
+  }
+  return html;
+}
+
+
 async function saveCall() {
   if (!currentAnalysis) return;
   try {
