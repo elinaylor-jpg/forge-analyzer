@@ -1267,6 +1267,28 @@ ${transcript.substring(0, 12000)}`;
     })
   });
 
+  const raw = await response.text();
+  let jsonStr = "";
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed.content && Array.isArray(parsed.content)) {
+      jsonStr = parsed.content.map(i => i.text || "").join("");
+    } else if (parsed.body) {
+      try {
+        const inner = JSON.parse(parsed.body);
+        if (inner.content && Array.isArray(inner.content)) {
+          jsonStr = inner.content.map(i => i.text || "").join("");
+        } else { jsonStr = parsed.body; }
+      } catch(e2) { jsonStr = parsed.body; }
+    } else if (parsed.prospectName !== undefined) {
+      return parsed;
+    } else { jsonStr = raw; }
+  } catch(e) { jsonStr = raw; }
+  const clean = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
+  const jsonMatch = clean.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error("No JSON found in response");
+  return JSON.parse(jsonMatch[0]);
+}
 
 async function saveCall() {
   if (!currentAnalysis) return;
