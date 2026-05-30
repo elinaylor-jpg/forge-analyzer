@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --text-dim: #666;
+    --text-mid: #999;
+    --danger: #ff4444;
+    --success: #44ff88;
+    --radius: 4px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* LOGIN */
+  #login-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .login-box {
+    width: 360px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 48px;
+  }
+
+  .login-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .login-logo span { color: var(--accent); }
+
+  .login-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 40px;
+  }
+
+  .login-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .login-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    padding: 12px 16px;
+    letter-spacing: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .login-input:focus { border-color: var(--accent); }
+
+  .login-btn {
+    width: 100%;
+    margin-top: 24px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .login-btn:hover { opacity: 0.85; }
+
+  .login-error {
+    font-size: 11px;
+    color: var(--danger);
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* APP */
+  #app { display: none; }
+
+  /* HEADER */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+    position: relative;
+  }
+
+  .nav-btn:hover { color: var(--text); }
+
+  .nav-btn.active {
+    color: var(--accent);
+  }
+
+  .nav-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* PAGES */
+  .page { display: none; padding: 40px 32px; max-width: 900px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .page-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 40px;
+  }
+
+  /* FORMS */
+  .form-group { margin-bottom: 24px; }
+
+  .form-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+
+  .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  .form-select option { background: var(--surface2); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: none;
+    color: var(--text-mid);
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--text-mid); color: var(--text); }
+
+  .btn-danger {
+    background: none;
+    color: var(--danger);
+    border: 1px solid transparent;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-danger:hover { border-color: var(--danger); }
+
+  /* ANALYZE PAGE */
+  .analyze-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .analyze-loading {
+    display: none;
+    text-align: center;
+    padding: 60px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin-top: 32px;
+  }
+
+  .loading-text {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  .analyze-result {
+    display: none;
+    margin-top: 32px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .result-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .result-prospect {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  .result-meta {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .result-badge {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 6px 12px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+
+  .result-body { padding: 24px; }
+
+  .result-section {
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .section-title.coming-soon { color: var(--text-dim); }
+
+  .feedback-item {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-mid);
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-left: 2px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .feedback-item.issue { border-left-color: var(--danger); }
+  .feedback-item.good { border-left-color: var(--success); }
+  .feedback-item.neutral { border-left-color: var(--text-dim); }
+
+  .result-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* LIBRARY PAGE */
+  .library-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    outline: none;
+  }
+
+  .filter-input:focus { border-color: var(--accent); }
+
+  .filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 10px 36px 10px 16px;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+  }
+
+  .filter-select option { background: var(--surface2); }
+
+  .call-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .call-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .call-card:hover { border-color: var(--accent); }
+
+  .call-card-left { flex: 1; }
+
+  .call-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .call-name-edit {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    outline: none;
+    width: 200px;
+  }
+
+  .call-info {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 16px;
+  }
+
+  .call-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .call-tag.closer { border-color: var(--accent2); color: var(--accent2); }
+
+  .call-card-right { display: flex; gap: 8px; align-items: center; }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-text { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; }
+
+  /* CALL DETAIL MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    display: none;
+    overflow-y: auto;
+    padding: 40px 20px;
+  }
+
+  .modal-overlay.active { display: block; }
+
+  .modal {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .modal-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body { padding: 32px; }
+
+  /* PROGRESS PAGE */
+  .progress-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress-tab {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 12px 20px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+  }
+
+  .progress-tab:hover { color: var(--text); }
+  .progress-tab.active { color: var(--accent); }
+  .progress-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .person-select {
+    margin-bottom: 24px;
+  }
+
+  .pattern-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .pattern-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pattern-count {
+    font-size: 10px;
+    background: var(--surface2);
+    padding: 4px 8px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .pattern-issues { display: flex; flex-direction: column; gap: 8px; }
+
+  .pattern-issue {
+    font-size: 12px;
+    color: var(--text-mid);
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-left: 2px solid var(--danger);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .issue-freq {
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    margin-left: 16px;
+  }
+
+  /* TEAM PAGE */
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .team-section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .member-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+
+  .member-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+
+  .add-member {
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 10px 14px;
+    outline: none;
+  }
+
+  .add-input:focus { border-color: var(--accent); }
+
+  .btn-add {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* NOTIFICATION */
+  .notif {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px 24px;
+    font-size: 12px;
+    z-index: 500;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .notif.show { transform: translateY(0); opacity: 1; }
+  .notif.success { border-left: 3px solid var(--success); }
+  .notif.error { border-left: 3px solid var(--danger); }
+
+  .divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+  @media (max-width: 640px) {
+    .analyze-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
+    .header { padding: 0 16px; }
+    .page { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">FORGE<span>.</span></div>
+    <div class="login-sub">Call Analyzer</div>
+    <div class="form-group">
+      <div class="login-label">Password</div>
+      <input type="password" class="login-input" id="pw-input" placeholder="••••" maxlength="10">
+      <div class="login-error" id="pw-error">Incorrect password</div>
+    </div>
+    <button class="login-btn" onclick="tryLogin()">Enter</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="header">
+    <div class="logo">FORGE<span>.</span></div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('analyze', this)">Analyze</button>
+      <button class="nav-btn" onclick="showPage('library', this)">Library</button>
+      <button class="nav-btn" onclick="showPage('progress', this)">Progress</button>
+      <button class="nav-btn" onclick="showPage('training', this)">Training</button>
+      <button class="nav-btn" onclick="showPage('team', this)">Team</button>
+    </nav>
+  </header>
+
+  <!-- ANALYZE PAGE -->
+  <div id="page-analyze" class="page active">
+    <div class="page-title">Analyze Call</div>
+    <div class="page-sub">Paste transcript — closer calls</div>
+
+    <div class="analyze-grid">
+      <div class="form-group">
+        <label class="form-label">Call Type</label>
+        <select class="form-select" id="call-type">
+          <option value="">Select type...</option>
+          <option value="closer_with_setter">Closer (with Setter)</option>
+          <option value="closer_without_setter">Closer (no Setter)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Closer</label>
+        <select class="form-select" id="closer-select">
+          <option value="">Select closer...</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Paste Transcript</label>
+      <textarea class="form-input" id="transcript-input" rows="8" placeholder="Paste the call transcript here..." style="resize:vertical;line-height:1.6"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Video Link (optional — for replay)</label>
+      <input type="text" class="form-input" id="drive-link" placeholder="https://drive.google.com/file/d/...">
+    </div>
+
+    <button class="btn-primary" onclick="analyzeCall()" id="analyze-btn">Run Analysis</button>
+
+    <div class="analyze-loading" id="analyze-loading">
+      <div class="loading-text">Pulling transcript + analyzing against Impact Formula...</div>
+    </div>
+
+    <div class="analyze-result" id="analyze-result">
+      <div class="result-header">
+        <div>
+          <div class="result-prospect" id="result-prospect-name">—</div>
+          <div class="result-meta" id="result-meta">—</div>
+        </div>
+        <div class="result-badge" id="result-type-badge">—</div>
+      </div>
+      <div class="result-body" id="result-body"></div>
+      <div style="padding: 0 24px 24px;">
+        <div class="result-actions">
+          <button class="btn-primary" onclick="saveCall()">Save to Library</button>
+          <button class="btn-secondary" onclick="resetAnalyze()">New Analysis</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRARY PAGE -->
+  <div id="page-library" class="page">
+    <div class="page-title">Call Library</div>
+    <div class="page-sub">All analyzed calls</div>
+
+    <div class="library-filters">
+      <input type="text" class="filter-input" id="lib-search" placeholder="Search prospect name..." oninput="renderLibrary()">
+      <select class="filter-select" id="lib-closer" onchange="renderLibrary()">
+        <option value="">All Closers</option>
+      </select>
+      <select class="filter-select" id="lib-type" onchange="renderLibrary()">
+        <option value="">All Types</option>
+        <option value="closer_with_setter">With Setter</option>
+        <option value="closer_without_setter">No Setter</option>
+      </select>
+    </div>
+
+    <div class="call-list" id="call-list"></div>
+  </div>
+
+  <!-- PROGRESS PAGE -->
+  <div id="page-progress" class="page">
+    <div class="page-title">Progress</div>
+    <div class="page-sub">Patterns across all calls</div>
+
+    <div class="progress-tabs">
+      <button class="progress-tab active" onclick="showProgressTab('closers', this)">Closers</button>
+    </div>
+
+    <div id="progress-closers">
+      <div class="form-group person-select">
+        <label class="form-label">Select Closer</label>
+        <select class="form-select" id="progress-closer-select" onchange="renderProgress()">
+          <option value="">All Closers</option>
+        </select>
+      </div>
+      <div id="progress-content"></div>
+    </div>
+  </div>
+
+  <!-- TRAINING PAGE -->
+  <div id="page-training" class="page">
+    <div class="page-title">Training</div>
+    <div class="page-sub">What the data says — based on the Impact Formula</div>
+
+    <div class="progress-tabs">
+      <button class="progress-tab active" onclick="showTrainingTab('objections', this)">Mid-Call Patterns</button>
+      <button class="progress-tab" onclick="showTrainingTab('weaknesses', this)">Closer Weaknesses</button>
+      <button class="progress-tab" onclick="showTrainingTab('endcall', this)">End-Call Objections</button>
+    </div>
+
+    <!-- MID CALL OBJECTIONS -->
+    <div id="training-objections">
+      <div class="form-group" style="margin-bottom:24px">
+        <label class="form-label">Filter by Closer</label>
+        <select class="form-select" id="training-obj-closer" onchange="renderTrainingObjections()" style="max-width:300px">
+          <option value="">All Closers</option>
+        </select>
+      </div>
+      <div id="training-obj-content"></div>
+    </div>
+
+    <!-- CLOSER WEAKNESSES -->
+    <div id="training-weaknesses" style="display:none">
+      <div class="form-group" style="margin-bottom:24px">
+        <label class="form-label">Select Closer</label>
+        <select class="form-select" id="training-weak-closer" onchange="renderTrainingWeaknesses()" style="max-width:300px">
+          <option value="">Select a closer...</option>
+        </select>
+      </div>
+      <div id="training-weak-content"></div>
+    </div>
+
+    <!-- END CALL OBJECTIONS -->
+    <div id="training-endcall" style="display:none">
+      <div class="empty-state" style="border:1px dashed var(--border);padding:80px 40px;text-align:center">
+        <div class="empty-icon">◎</div>
+        <div class="empty-text" style="color:var(--text-dim);font-size:12px;text-transform:uppercase;letter-spacing:2px;margin-top:16px">End-Call Objection Analysis — Coming Soon</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAM PAGE -->
+  <div id="page-team" class="page">
+    <div class="page-title">Team</div>
+    <div class="page-sub">Manage closers</div>
+
+    <div class="team-grid">
+      <div>
+        <div class="team-section-title">Closers</div>
+        <div class="member-list" id="closer-list"></div>
+        <div class="add-member">
+          <input type="text" class="add-input" id="add-closer-input" placeholder="Name..." onkeydown="if(event.key==='Enter') addMember('closer')">
+          <button class="btn-add" onclick="addMember('closer')">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CALL DETAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-content">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">—</div>
+        <div class="result-meta" id="modal-meta">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+const PASSWORD = '2026';
+const SUPABASE_URL = 'https://htaokstqbykbvoksnlcm.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yJiIA75H0XpEx-WqeUsP8w_gqZMziYo';
+
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`
+  };
+}
+
+async function sbGet(table, params = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { headers: sbHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function sbInsert(table, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function sbUpdate(table, id, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { ...sbHeaders(), 'Prefer': 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function sbDelete(table, id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: sbHeaders()
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+async function sbDeleteWhere(table, field, value) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${field}=eq.${encodeURIComponent(value)}`, {
+    method: 'DELETE',
+    headers: sbHeaders()
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+// STATE
+let currentAnalysis = null;
+let cachedCalls = [];
+let cachedClosers = [];
+
+// LOGIN
+function tryLogin() {
+  const val = document.getElementById('pw-input').value;
+  if (val === PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+  }
+}
+
+document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+// INIT
+async function init() {
+  try {
+    const [calls, team] = await Promise.all([
+      sbGet('calls', 'order=created_at.desc'),
+      sbGet('team', 'order=id.asc')
+    ]);
+    cachedCalls = calls || [];
+    cachedClosers = (team || []).filter(t => t.role === 'closer').map(t => t.name);
+  } catch(e) {
+    console.error('Init error:', e);
+    notify('Could not load data — check connection', 'error');
+  }
+  populateSelects();
+  renderLibrary();
+  renderTeam();
+  renderProgress();
+}
+
+function populateSelects() {
+  const closerSel = document.getElementById('closer-select');
+  const libCloser = document.getElementById('lib-closer');
+  const progCloser = document.getElementById('progress-closer-select');
+  const trainObjCloser = document.getElementById('training-obj-closer');
+  const trainWeakCloser = document.getElementById('training-weak-closer');
+
+  [closerSel, libCloser, progCloser, trainObjCloser, trainWeakCloser].forEach(sel => {
+    const first = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(first.cloneNode(true));
+  });
+
+  cachedClosers.forEach(c => {
+    [closerSel, libCloser, progCloser, trainObjCloser, trainWeakCloser].forEach(sel => {
+      const o = document.createElement('option');
+      o.value = c;
+      o.textContent = c;
+      sel.appendChild(o);
+    });
+  });
+}
+
+// NAV
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'library') renderLibrary();
+  if (name === 'progress') renderProgress();
+  if (name === 'team') renderTeam();
+  if (name === 'training') { renderTrainingObjections(); renderTrainingWeaknesses(); }
+}
+
+// ANALYZE
+async function analyzeCall() {
+  const type = document.getElementById('call-type').value;
+  const closer = document.getElementById('closer-select').value;
+  const transcript = document.getElementById('transcript-input').value.trim();
+  const link = document.getElementById('drive-link').value.trim();
+
+  if (!type) return notify('Select a call type', 'error');
+  if (!closer) return notify('Select a closer', 'error');
+  if (!transcript) return notify('Paste a transcript', 'error');
+
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('analyze-loading').style.display = 'block';
+  document.getElementById('analyze-result').style.display = 'none';
+
+  try {
+    const analysis = await analyzeWithClaude(transcript, type);
+
+    currentAnalysis = {
+      id: Date.now().toString(),
+      prospectName: analysis.prospectName || 'Unknown',
+      closer,
+      type,
+      link,
+      date: new Date().toLocaleDateString(),
+      analysis: analysis.sections,
+      summary: analysis.summary
+    };
+
+    renderResult(currentAnalysis);
+
+  } catch (err) {
+    notify(err.message || 'Analysis failed', 'error');
+    document.getElementById('analyze-loading').style.display = 'none';
+    document.getElementById('analyze-btn').disabled = false;
+  }
+}
+
+function extractDriveId(url) {
+  const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+async function fetchDriveTranscript(fileId) {
+  // Try to fetch the transcript via Google Drive's timedtext API
+  const urls = [
+    `https://drive.google.com/timedtext?vid=${fileId}&lang=en&fmt=srv3`,
+    `https://drive.google.com/timedtext?vid=${fileId}&lang=en`,
+  ];
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.length > 100) {
+          return parseTimedText(text);
+        }
+      }
+    } catch {}
+  }
+
+  // Fallback: try to fetch the page and look for transcript data
+  try {
+    const res = await fetch(`https://drive.google.com/file/d/${fileId}/view`);
+    const html = await res.text();
+    const transcriptMatch = html.match(/"timedtext".*?"url":"([^"]+)"/);
+    if (transcriptMatch) {
+      const tRes = await fetch(transcriptMatch[1].replace(/\\u003d/g, '=').replace(/\\u0026/g, '&'));
+      const tText = await tRes.text();
+      return parseTimedText(tText);
+    }
+  } catch {}
+
+  return null;
+}
+
+function parseTimedText(xml) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+    const texts = doc.querySelectorAll('text, p');
+    return Array.from(texts).map(t => t.textContent.trim()).filter(Boolean).join(' ');
+  } catch {
+    // Try plain text extraction
+    return xml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+}
+
+async function analyzeWithClaude(transcript, callType) {
+  const typeLabel = callType === 'closer_with_setter' ? 'Closer call (a Setter already handled logical certainty — only evaluate emotional certainty and pitch/close)' : 'Closer call with no Setter (evaluate logical certainty, emotional certainty, and pitch/close)';
+
+  const prompt = `You are analyzing a sales call against the Impact Formula. Your ONLY job is to identify what was done wrong or missed based on the formula. Do NOT give advice, suggestions, or teach. Do NOT judge based on wording — judge based on whether the answer/outcome was achieved. Only flag issues.
+
+CALL TYPE: ${typeLabel}
+
+THE IMPACT FORMULA:
+
+INTENT STAGE (all call types):
+- Did they get an overarching goal from the prospect? (e.g. more money, more freedom, replace income, more listings, grow business, more leads)
+- Was the opener casual and natural?
+
+LOGICAL CERTAINTY (only if no setter, or if setter):
+- Did they uncover the current strategy? (what are they doing NOW to achieve their goal)
+- Did they find a real specific problem/catalyst? (not vague like "I want to grow" — a real problem like "referrals are inconsistent" or "open houses aren't keeping me busy")
+- Did they expand the pain? (what do you mean, how long, and some form of impact — getting them to see the gap between before and now)
+
+EMOTIONAL CERTAINTY (all closer calls):
+- Did they pre-handle the DIY objection? (why advanced training/solution vs just doing it themselves or sticking with free stuff)
+- Did they find out what prevented the prospect from getting help before?
+- Did they challenge/reframe that belief? (doesn't have to be "what shifted" — any reframe, analogy, or pattern interrupt that breaks the belief counts)
+- Did they get strong specific goals from future pace? (2-3 specific things that would be different — not vague like "be successful")
+- Did they get strong specific consequences? (what happens if nothing changes — 2-3 specific things)
+
+PITCH & CLOSE (closer calls only):
+- Did they get commitment? (are you willing to settle for that)
+- Did they get responsibility? (whose responsibility is it)
+- Did they get a "why now"? (why not wait, push it off — this is important)
+- Did they pitch 3 pillars tied back to the prospect's specific problems?
+- Did they close on investment?
+- Objection handling: COMING SOON
+
+First extract the prospect's name from the transcript (usually mentioned early). Then analyze each section.
+
+Respond in this exact JSON format:
+{
+  "prospectName": "First name or full name found in transcript",
+  "sections": [
+    {
+      "title": "Intent Stage",
+      "items": [
+        {"type": "good|issue|neutral", "text": "what happened"}
+      ]
+    },
+    {
+      "title": "Logical Certainty",
+      "items": [...],
+      "skip": true/false
+    },
+    {
+      "title": "Emotional Certainty",
+      "items": [...]
+    },
+    {
+      "title": "Pitch & Close",
+      "items": [...],
+      "comingSoon": ["Objection Handling"]
+    }
+  ],
+  "summary": ["key issue 1", "key issue 2", "key issue 3"]
+}
+
+Only include sections relevant to the call type. If logical certainty is skipped (closer with setter), set skip: true.
+
+TRANSCRIPT:
+${transcript.substring(0, 12000)}`;
+
+  const response = await fetch('/.netlify/functions/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  const data = await response.json();
+  const text = data.content.map(i => i.text || '').join('');
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+function renderResult(analysis) {
+  document.getElementById('analyze-loading').style.display = 'none';
+  document.getElementById('analyze-result').style.display = 'block';
+  document.getElementById('analyze-btn').disabled = false;
+
+  document.getElementById('result-prospect-name').textContent = analysis.prospectName;
+  document.getElementById('result-meta').textContent = `${analysis.closer} · ${analysis.date}`;
+  document.getElementById('result-type-badge').textContent = analysis.type === 'closer_with_setter' ? 'Closer + Setter' : 'Closer Only';
+
+  document.getElementById('result-body').innerHTML = buildResultHTML(analysis);
+}
+
+function buildResultHTML(analysis) {
+  let html = '';
+
+  if (analysis.summary && analysis.summary.length) {
+    html += `<div class="result-section">
+      <div class="section-title">Summary</div>`;
+    analysis.summary.forEach(s => {
+      html += `<div class="feedback-item issue">${s}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  analysis.analysis.forEach(section => {
+    if (section.skip) return;
+    html += `<div class="result-section">
+      <div class="section-title">${section.title}</div>`;
+
+    if (section.items && section.items.length) {
+      section.items.forEach(item => {
+        html += `<div class="feedback-item ${item.type}">${item.text}</div>`;
+      });
+    }
+
+    if (section.comingSoon) {
+      section.comingSoon.forEach(cs => {
+        html += `<div class="feedback-item neutral" style="opacity:0.4">${cs} — Coming Soon</div>`;
+      });
+    }
+
+    html += `</div>`;
+  });
+
+  if (analysis.link) {
+    html += `<div style="margin-top:16px">
+      <a href="${analysis.link}" target="_blank" style="color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:2px;text-decoration:none;">▶ Watch Call →</a>
+    </div>`;
+  }
+
+  return html;
+}
+
+async function saveCall() {
+  if (!currentAnalysis) return;
+  try {
+    const row = {
+      id: currentAnalysis.id,
+      prospect_name: currentAnalysis.prospectName,
+      closer: currentAnalysis.closer,
+      type: currentAnalysis.type,
+      link: currentAnalysis.link,
+      date: currentAnalysis.date,
+      analysis: currentAnalysis.analysis,
+      summary: currentAnalysis.summary
+    };
+    await sbInsert('calls', row);
+    cachedCalls.unshift(currentAnalysis);
+    notify('Saved to library', 'success');
+    resetAnalyze();
+  } catch(e) {
+    notify('Save failed: ' + e.message, 'error');
+  }
+}
+
+function resetAnalyze() {
+  currentAnalysis = null;
+  document.getElementById('analyze-result').style.display = 'none';
+  document.getElementById('transcript-input').value = '';
+  document.getElementById('drive-link').value = '';
+  document.getElementById('call-type').value = '';
+  document.getElementById('closer-select').value = '';
+}
+
+// LIBRARY
+function renderLibrary() {
+  const search = document.getElementById('lib-search').value.toLowerCase();
+  const closerFilter = document.getElementById('lib-closer').value;
+  const typeFilter = document.getElementById('lib-type').value;
+
+  let calls = cachedCalls.filter(c => {
+    if (search && !(c.prospectName || c.prospect_name || '').toLowerCase().includes(search)) return false;
+    if (closerFilter && c.closer !== closerFilter) return false;
+    if (typeFilter && c.type !== typeFilter) return false;
+    return true;
+  });
+
+  const list = document.getElementById('call-list');
+
+  if (!calls.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">○</div>
+      <div class="empty-text">No calls found</div>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = calls.map(c => {
+    const name = c.prospectName || c.prospect_name || 'Unknown';
+    return `
+    <div class="call-card" onclick="openCall('${c.id}')">
+      <div class="call-card-left">
+        <div class="call-name">
+          <span id="name-display-${c.id}">${name}</span>
+          <span class="call-tag closer">${c.type === 'closer_with_setter' ? 'Closer + Setter' : 'Closer Only'}</span>
+        </div>
+        <div class="call-info">
+          <span>${c.closer}</span>
+          <span>${c.date}</span>
+        </div>
+      </div>
+      <div class="call-card-right" onclick="event.stopPropagation()">
+        <button class="btn-secondary" onclick="startEditName('${c.id}')">Edit Name</button>
+        <button class="btn-danger" onclick="deleteCall('${c.id}')">Delete</button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function startEditName(id) {
+  const call = cachedCalls.find(c => c.id === id);
+  if (!call) return;
+  const name = call.prospectName || call.prospect_name || 'Unknown';
+  const span = document.getElementById('name-display-' + id);
+  span.innerHTML = `<input class="call-name-edit" value="${name}" onblur="saveEditName('${id}', this.value)" onkeydown="if(event.key==='Enter') this.blur()" autofocus>`;
+}
+
+async function saveEditName(id, val) {
+  if (!val.trim()) { renderLibrary(); return; }
+  try {
+    await sbUpdate('calls', id, { prospect_name: val.trim() });
+    const call = cachedCalls.find(c => c.id === id);
+    if (call) { call.prospectName = val.trim(); call.prospect_name = val.trim(); }
+  } catch(e) { notify('Update failed', 'error'); }
+  renderLibrary();
+}
+
+async function deleteCall(id) {
+  try {
+    await sbDelete('calls', id);
+    cachedCalls = cachedCalls.filter(c => c.id !== id);
+    renderLibrary();
+    notify('Call deleted', 'success');
+  } catch(e) { notify('Delete failed', 'error'); }
+}
+
+function openCall(id) {
+  const call = cachedCalls.find(c => c.id === id);
+  if (!call) return;
+  const name = call.prospectName || call.prospect_name || 'Unknown';
+  const analysis = call.analysis || [];
+  const summary = call.summary || [];
+
+  document.getElementById('modal-title').textContent = name;
+  document.getElementById('modal-meta').textContent = `${call.closer} · ${call.date} · ${call.type === 'closer_with_setter' ? 'Closer + Setter' : 'Closer Only'}`;
+  document.getElementById('modal-body').innerHTML = buildResultHTML({ prospectName: name, analysis, summary, link: call.link });
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+
+// PROGRESS
+function showProgressTab(tab, btn) {
+  document.querySelectorAll('.progress-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function renderProgress() {
+  const selected = document.getElementById('progress-closer-select').value;
+  let calls = cachedCalls.filter(c => !selected || c.closer === selected);
+
+  if (!calls.length) {
+    document.getElementById('progress-content').innerHTML = `<div class="empty-state"><div class="empty-icon">○</div><div class="empty-text">No calls to analyze yet</div></div>`;
+    return;
+  }
+
+  // Aggregate issues per person
+  const byPerson = {};
+  calls.forEach(call => {
+    if (!byPerson[call.closer]) byPerson[call.closer] = { count: 0, issues: {} };
+    byPerson[call.closer].count++;
+    if (call.analysis) {
+      call.analysis.forEach(section => {
+        if (!section.items) return;
+        section.items.filter(i => i.type === 'issue').forEach(item => {
+          const key = section.title + ': ' + item.text.substring(0, 80);
+          byPerson[call.closer].issues[key] = (byPerson[call.closer].issues[key] || 0) + 1;
+        });
+      });
+    }
+    if (call.summary) {
+      call.summary.forEach(s => {
+        const key = 'Summary: ' + s.substring(0, 80);
+        byPerson[call.closer].issues[key] = (byPerson[call.closer].issues[key] || 0) + 1;
+      });
+    }
+  });
+
+  let html = '';
+  Object.entries(byPerson).forEach(([name, data]) => {
+    const sortedIssues = Object.entries(data.issues).sort((a,b) => b[1]-a[1]);
+    html += `<div class="pattern-card">
+      <div class="pattern-name">${name} <span class="pattern-count">${data.count} call${data.count !== 1 ? 's' : ''}</span></div>
+      <div class="pattern-issues">`;
+
+    if (!sortedIssues.length) {
+      html += `<div class="feedback-item good">No recurring issues found</div>`;
+    } else {
+      sortedIssues.slice(0, 10).forEach(([issue, count]) => {
+        html += `<div class="pattern-issue">
+          <span>${issue}</span>
+          <span class="issue-freq">${count}x</span>
+        </div>`;
+      });
+    }
+
+    html += `</div></div>`;
+  });
+
+  document.getElementById('progress-content').innerHTML = html;
+}
+
+// TEAM
+function renderTeam() {
+  const list = document.getElementById('closer-list');
+  list.innerHTML = cachedClosers.length
+    ? cachedClosers.map(c => `<div class="member-item"><span>${c}</span><button class="btn-danger" onclick="removeMember('closer','${c}')">Remove</button></div>`).join('')
+    : `<div style="font-size:12px;color:var(--text-dim);padding:12px 0">No closers added yet</div>`;
+}
+
+async function addMember(type) {
+  const input = document.getElementById(`add-${type}-input`);
+  const name = input.value.trim();
+  if (!name) return;
+  if (cachedClosers.includes(name)) { input.value = ''; return; }
+  try {
+    await sbInsert('team', { name, role: type });
+    cachedClosers.push(name);
+    input.value = '';
+    notify(`${name} added`, 'success');
+    renderTeam();
+    populateSelects();
+  } catch(e) { notify('Add failed: ' + e.message, 'error'); }
+}
+
+async function removeMember(type, name) {
+  try {
+    await sbDeleteWhere('team', 'name', name);
+    cachedClosers = cachedClosers.filter(m => m !== name);
+    renderTeam();
+    populateSelects();
+    notify(`${name} removed`, 'success');
+  } catch(e) { notify('Remove failed', 'error'); }
+}
+
+// TRAINING
+function showTrainingTab(tab, btn) {
+  document.querySelectorAll('.progress-tab').forEach(b => {
+    if (b.closest('#page-training')) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  document.getElementById('training-objections').style.display = tab === 'objections' ? 'block' : 'none';
+  document.getElementById('training-weaknesses').style.display = tab === 'weaknesses' ? 'block' : 'none';
+  document.getElementById('training-endcall').style.display = tab === 'endcall' ? 'block' : 'none';
+  if (tab === 'objections') renderTrainingObjections();
+  if (tab === 'weaknesses') renderTrainingWeaknesses();
+}
+
+function renderTrainingObjections() {
+  const closerFilter = document.getElementById('training-obj-closer').value;
+  let calls = cachedCalls.filter(c => !closerFilter || c.closer === closerFilter);
+  const content = document.getElementById('training-obj-content');
+
+  if (!calls.length) {
+    content.innerHTML = `<div class="empty-state" style="border:1px dashed var(--border);padding:60px 40px;text-align:center"><div class="empty-icon">○</div><div class="empty-text">No calls analyzed yet</div></div>`;
+    return;
+  }
+
+  // Extract mid-call objections from emotional certainty section
+  // Specifically: what prevented them + weak/vague answers on goals and consequences
+  const objections = {};
+
+  calls.forEach(call => {
+    if (!call.analysis) return;
+    call.analysis.forEach(section => {
+      if (!section.items) return;
+      // Only pull from emotional certainty section (mid-call)
+      const isMidCall = section.title === 'Emotional Certainty';
+      if (!isMidCall) return;
+
+      section.items.forEach(item => {
+        // Only pull items that reference prospect behavior/objections, not closer mistakes
+        // Items flagged as issue that relate to what the prospect said or avoided
+        if (item.type === 'issue' && (
+          item.text.toLowerCase().includes('prevented') ||
+          item.text.toLowerCase().includes('vague') ||
+          item.text.toLowerCase().includes('weak') ||
+          item.text.toLowerCase().includes('didn\'t give') ||
+          item.text.toLowerCase().includes('no specific') ||
+          item.text.toLowerCase().includes('pushed off') ||
+          item.text.toLowerCase().includes('wouldn\'t be that bad') ||
+          item.text.toLowerCase().includes('figure it out') ||
+          item.text.toLowerCase().includes('prospect') ||
+          item.text.toLowerCase().includes('goal') ||
+          item.text.toLowerCase().includes('consequence')
+        )) {
+          const key = item.text.substring(0, 120);
+          if (!objections[key]) objections[key] = { text: item.text, count: 0, closers: new Set() };
+          objections[key].count++;
+          objections[key].closers.add(call.closer);
+        }
+      });
+    });
+  });
+
+  const sorted = Object.values(objections).sort((a,b) => b.count - a.count);
+
+  if (!sorted.length) {
+    content.innerHTML = `<div class="empty-state" style="border:1px dashed var(--border);padding:60px;text-align:center"><div class="empty-text">No mid-call patterns found yet — analyze more calls</div></div>`;
+    return;
+  }
+
+  let html = `<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px">Showing patterns from ${calls.length} call${calls.length!==1?'s':''}</div>`;
+
+  sorted.forEach(obj => {
+    html += `<div class="pattern-card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+        <div class="feedback-item issue" style="flex:1;margin:0">${obj.text}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;white-space:nowrap">
+          <span class="pattern-count">${obj.count}x</span>
+          <span style="font-size:10px;color:var(--text-dim)">${Array.from(obj.closers).join(', ')}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  content.innerHTML = html;
+}
+
+function renderTrainingWeaknesses() {
+  const selected = document.getElementById('training-weak-closer').value;
+  const content = document.getElementById('training-weak-content');
+
+  if (!selected) {
+    content.innerHTML = `<div class="empty-state" style="border:1px dashed var(--border);padding:60px;text-align:center"><div class="empty-text">Select a closer to see their weaknesses</div></div>`;
+    return;
+  }
+
+  const calls = cachedCalls.filter(c => c.closer === selected);
+
+  if (!calls.length) {
+    content.innerHTML = `<div class="empty-state" style="border:1px dashed var(--border);padding:60px;text-align:center"><div class="empty-text">No calls found for ${selected}</div></div>`;
+    return;
+  }
+
+  // Map issues to Impact Formula sections
+  const formulaSections = {
+    'Intent Stage': { issues: {}, label: 'Intent Stage' },
+    'Logical Certainty': { issues: {}, label: 'Logical Certainty' },
+    'Emotional Certainty': { issues: {}, label: 'Emotional Certainty' },
+    'Pitch & Close': { issues: {}, label: 'Pitch & Close' }
+  };
+
+  calls.forEach(call => {
+    if (!call.analysis) return;
+    call.analysis.forEach(section => {
+      if (!section.items || !formulaSections[section.title]) return;
+      section.items.filter(i => i.type === 'issue').forEach(item => {
+        const key = item.text.substring(0, 100);
+        formulaSections[section.title].issues[key] = (formulaSections[section.title].issues[key] || 0) + 1;
+      });
+    });
+    // Also pull from summary
+    if (call.summary) {
+      call.summary.forEach(s => {
+        // Try to bucket summary items by keyword
+        const key = s.substring(0, 100);
+        const lower = s.toLowerCase();
+        let bucket = 'Intent Stage';
+        if (lower.includes('strategy') || lower.includes('problem') || lower.includes('pain') || lower.includes('impact') || lower.includes('catalyst')) bucket = 'Logical Certainty';
+        else if (lower.includes('prevented') || lower.includes('goal') || lower.includes('consequence') || lower.includes('belief') || lower.includes('diy') || lower.includes('future')) bucket = 'Emotional Certainty';
+        else if (lower.includes('commit') || lower.includes('pillar') || lower.includes('close') || lower.includes('invest') || lower.includes('why now') || lower.includes('responsib')) bucket = 'Pitch & Close';
+        formulaSections[bucket].issues[key] = (formulaSections[bucket].issues[key] || 0) + 1;
+      });
+    }
+  });
+
+  let html = `<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:24px">${selected} — ${calls.length} call${calls.length!==1?'s':''} analyzed</div>`;
+
+  let hasAnyIssues = false;
+
+  Object.entries(formulaSections).forEach(([key, data]) => {
+    const sorted = Object.entries(data.issues).sort((a,b) => b[1]-a[1]);
+    if (!sorted.length) return;
+    hasAnyIssues = true;
+
+    html += `<div class="pattern-card" style="margin-bottom:16px">
+      <div class="pattern-name">${data.label}</div>
+      <div class="pattern-issues">`;
+
+    sorted.forEach(([issue, count]) => {
+      const pct = Math.round((count / calls.length) * 100);
+      html += `<div class="pattern-issue">
+        <span>${issue}</span>
+        <span class="issue-freq">${count}/${calls.length} calls (${pct}%)</span>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  if (!hasAnyIssues) {
+    html += `<div class="feedback-item good">No recurring issues found across ${calls.length} calls</div>`;
+  }
+
+  content.innerHTML = html;
+}
+
+
+function notify(msg, type = 'success') {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.className = `notif ${type} show`;
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
