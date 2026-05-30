@@ -1145,112 +1145,89 @@ function parseTimedText(xml) {
 async function analyzeWithClaude(transcript, callType) {
   const typeLabel = callType === 'closer_with_setter' ? 'Closer call (a Setter already handled logical certainty — only evaluate emotional certainty and pitch/close)' : 'Closer call with no Setter (evaluate logical certainty, emotional certainty, and pitch/close)';
 
-  const prompt = `You are analyzing a sales call against the Impact Formula. Your ONLY job is to identify what was done wrong or missed based on the formula. Do NOT give advice, suggestions, or teach. Do NOT judge based on wording used — judge ONLY on whether the correct answer/outcome was achieved. Only flag real issues.
+  const prompt = `You are analyzing a sales call against the Impact Formula. 
 
-CRITICAL RULES:
-- Judge the ANSWER the prospect gave, not the exact words the closer used
-- If the closer got the right outcome through any method, it is correct
-- Only flag something as an issue if the outcome was genuinely missing or weak
-- Stay 100% locked to the Impact Formula below — no outside judgment
+YOUR ONLY JOB: Read the full conversation and identify what outcomes were or were not achieved. You are NOT checking for specific words, phrases, or script lines. You are checking whether certain things actually happened in the conversation — regardless of how they were said.
 
-CALL TYPE: ${typeLabel}
+CRITICAL: Be generous in recognizing when something was done. If the prospect gave the right answer at any point in the conversation — even if the closer got there in an unconventional way — it counts. Only flag something as missing if it genuinely did not happen at all, or if the answer the prospect gave was genuinely weak/vague.
 
-═══════════════════════════════════════
-THE IMPACT FORMULA — BACKBONE
-═══════════════════════════════════════
+CALL TYPE: \${typeLabel}
 
-${callType === 'closer_with_setter' ? `
-RECAP (Closer with Setter only — replaces Intent + Logical Certainty):
-- Did the closer recap the prospect's problem clearly at the start?
-- A good recap shows they understood what the Setter uncovered — the prospect's current situation, what's not working, and why they're on the call
-- Judge: was the problem recapped clearly and specifically? Vague recaps are an issue.
+\${callType === 'closer_with_setter' ? `
+RECAP (only for Closer with Setter):
+CHECK: Did the closer show at the start of the call that they understood the prospect's situation — their current strategy, what's not working, and why they're on the call?
+GOOD: Any reference to what was discussed before, what the prospect is dealing with, or confirmation of their goal/problem
+ISSUE: Closer jumped straight into questions with no acknowledgment of prior context
 ` : `
 INTENT STAGE:
-- Did the opener feel casual and natural — not robotic or salesy?
-- Did they get the prospect's overarching goal? Good goals: make more money, get more listings, grow business, replace income, more freedom, more leads
-- A vague answer like "just curious" with no real goal = issue
+CHECK 1 - OPENER: Did the call start in a casual, relaxed way? (Not robotic, not immediately business-focused)
+CHECK 2 - GOAL: At some point early in the call, did the closer find out what the prospect's main goal is? 
+GOOD GOALS: more listings, grow the business, more income, more leads, replace job, more freedom, consistency
+ISSUE: No goal was ever established, or prospect only gave a completely vague non-answer that was never followed up on
 
 LOGICAL CERTAINTY:
-1. CURRENT STRATEGY — Did they uncover what the prospect is doing NOW to achieve their goal? (e.g. referrals, open houses, cold calling, etc.)
-2. HOW LONG — Did they ask how long they've been using that strategy?
-3. PROBLEM/CATALYST — Did they find a real specific problem? Good problems: "referrals are inconsistent," "open houses aren't keeping me busy," "I can't rely on the market." Vague answers like "I just want to grow" = issue
-4. EXPAND THE PAIN — Did they probe deeper? Look for: "what do you mean?", "how long has that been going on?", and some form of impact question that got the prospect to realize the gap between where they were and where they are now
+CHECK 1 - CURRENT STRATEGY: Did the closer find out what the prospect is currently doing to try to achieve their goal? (referrals, open houses, cold calling, sphere of influence, etc.)
+CHECK 2 - PROBLEM: Did a real specific problem come up in the conversation? Look for anything the prospect said wasn't working, was inconsistent, was frustrating, or had changed. It doesn't matter how the closer got there.
+GOOD PROBLEMS: inconsistent referrals, open houses not generating enough business, no structure on calls, can't rely on the market, slow seasons
+WEAK/VAGUE: "I just want to grow" with nothing more specific = issue
+CHECK 3 - EXPAND: Did the closer go deeper on the problem? Look for any follow-up questions about the problem, how long it's been going on, or what the impact has been. The prospect should have revealed more detail about their situation.
 `}
 
 EMOTIONAL CERTAINTY:
 
-1. RATIONAL — Did they ask why the prospect is looking for more advanced help rather than just doubling down on their current strategy / free stuff / brokerage?
-   - The question can be worded many ways — judge on the ANSWER they got
-   - Good answers: "I'll get there faster," "it's more efficient," "I need structure I can't build myself," "I've been trying on my own and it's not working"
-   - Weak/vague answers = issue
+CHECK 1 - RATIONAL: At some point did the closer explore WHY the prospect is looking for outside help rather than just continuing what they're doing on their own?
+Look for: any conversation about why they're seeking more advanced help, why not just stick with free resources/brokerage/current approach
+GOOD ANSWERS from prospect: faster results, need more structure, tired of figuring it out alone, current approach isn't efficient enough, want to shortcut the learning curve
+ISSUE: This topic never came up at all
 
-2. PRE-HANDLE INTERNAL OBJECTION — Two parts:
-   a. WHAT PREVENTED YOU — Did they ask what stopped the prospect from getting help sooner? Did they get a real honest answer?
-   b. BELIEF CHANGE — Did they either:
-      - Get a strong "what shifted" answer (e.g. "I hit a breaking point," "I need to prioritize this now," "I can't keep doing this alone"), OR
-      - Successfully reframe the belief (e.g. prospect says no time/money → closer reframes it → prospect agrees their belief was wrong and says what needs to change)
-   - Judge on the END RESULT — did the belief change? Not on which method was used.
+CHECK 2 - WHAT PREVENTED YOU: Did the closer ask what stopped the prospect from getting help sooner, or why they hadn't made a change before?
+Look for: any version of "what stopped you," "why not sooner," "what held you back," or similar
+GOOD ANSWERS: didn't know where to start, didn't have time, wasn't sure it would work, other priorities got in the way
+ISSUE: Never asked at all
 
-3. FUTURE PACE — Did they get 2-3 specific goals that would be different if the problem was solved?
-   - Good: specific tangible things ("I'd have consistent listings every month," "I wouldn't have to do open houses on weekends," "I'd know exactly what to say on every call")
-   - Bad: vague answers like "I'd be successful" or "things would be better" = issue
-   - Did they make the prospect step into those shoes and feel it personally?
-   - Note: Usain Bolt pre-frame or similar is optional — only judge the quality of answers, not whether the pre-frame was used
+CHECK 3 - BELIEF CHANGE: After the "what prevented you" answer, did the closer address that belief in some way?
+Look for: ANY of these — a follow-up question that challenged the belief, a reframe, an analogy, asking "what's shifted now," or getting the prospect to acknowledge their old belief wasn't serving them
+GOOD OUTCOME: Prospect gave a strong reason why NOW is different, or acknowledged their previous thinking was wrong, or showed genuine commitment to change
+ISSUE: Closer just accepted the "prevented" answer and moved on with no challenge or follow-up
 
-4. CONSEQUENCE — Did they get 2-3 specific consequences of NOT changing?
-   - Good: specific tangible things ("I'd keep losing listings to other agents," "I'd still be stressed about where my next check comes from")
-   - Bad: vague answers like "nothing would change" or "it'd be the same" = issue
-   - Did they make the prospect feel those consequences emotionally?
+CHECK 4 - FUTURE PACE (GOALS): Did the prospect share specific things that would be different in their life/business if the problem was solved?
+Look for: ANY specific outcomes the prospect mentioned — more deals, more income, specific lifestyle changes, less stress, specific business results
+GOOD: 2+ specific things mentioned anywhere in the conversation
+WEAK: Only vague statements like "things would be better" or "I'd be more successful" with no specifics
+ISSUE: Goals never came up at all, or only completely vague answers with no follow-up
 
-═══════════════════════════════════════
+CHECK 5 - CONSEQUENCE: Did the prospect acknowledge what happens if nothing changes?
+Look for: ANY mention of staying stuck, losing more time/money, falling further behind, missing out, stress continuing
+GOOD: Prospect showed they understood the cost of inaction — even if briefly
+ISSUE: Consequences never came up, or prospect seemed completely unbothered by the idea of not changing
+
 PITCH & CLOSE:
-═══════════════════════════════════════
+CHECK 1 - COMMITMENT: Did the closer get the prospect to say they don't want to stay in their current situation? (any version of "are you willing to settle for that" or equivalent)
+CHECK 2 - WHY NOW: Did the closer address why the prospect should act now vs waiting? This is important — flag if completely missing
+CHECK 3 - RESPONSIBILITY: Did the closer establish that it's the prospect's responsibility to make the change happen?
+CHECK 4 - PITCH: Did the closer present what the program/offer includes? Did they connect it back to what the prospect specifically mentioned?
+CHECK 5 - CLOSE: Did the closer present the investment and ask how they want to proceed?
+Objection Handling: COMING SOON
 
-1. COMMITMENT — Did they ask "are you willing to settle for that?" or equivalent — getting the prospect to verbally commit they don't want the consequence
-2. WHY NOW — Did they challenge why now vs waiting? (e.g. "there's always the new year new me guy, why draw the line now?") — THIS IS IMPORTANT, flag if missing
-3. RESPONSIBILITY — Did they establish whose responsibility it is to make the change?
-4. PITCH — Did they pitch 3 pillars tied back to the prospect's specific problems mentioned earlier in the call? Each pillar should reference something the prospect actually said.
-5. CLOSE — Did they close on the investment?
-6. Objection Handling: COMING SOON
+IMPORTANT FINAL RULE: If you are unsure whether something happened, assume it did and mark it neutral or good. Only mark something as an issue if you are confident it was genuinely absent or genuinely weak based on the actual conversation.
 
-═══════════════════════════════════════
+Extract the prospect's name from the transcript first.
 
-First extract the prospect's name from the transcript (usually mentioned early).
-
-Respond in this EXACT JSON format only — no extra text:
+Respond in this EXACT JSON format only:
 {
-  "prospectName": "name from transcript",
+  "prospectName": "name",
   "sections": [
-    {
-      "title": "Recap",
-      "skip": true or false,
-      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
-    },
-    {
-      "title": "Intent Stage", 
-      "skip": true or false,
-      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
-    },
-    {
-      "title": "Logical Certainty",
-      "skip": true or false,
-      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
-    },
-    {
-      "title": "Emotional Certainty",
-      "items": [{"type": "good|issue|neutral", "text": "specific observation"}]
-    },
-    {
-      "title": "Pitch & Close",
-      "items": [{"type": "good|issue|neutral", "text": "specific observation"}],
-      "comingSoon": ["Objection Handling"]
-    }
+    {"title": "Recap", "skip": true or false, "items": [{"type": "good|issue|neutral", "text": "observation"}]},
+    {"title": "Intent Stage", "skip": true or false, "items": [{"type": "good|issue|neutral", "text": "observation"}]},
+    {"title": "Logical Certainty", "skip": true or false, "items": [{"type": "good|issue|neutral", "text": "observation"}]},
+    {"title": "Emotional Certainty", "items": [{"type": "good|issue|neutral", "text": "observation"}]},
+    {"title": "Pitch & Close", "items": [{"type": "good|issue|neutral", "text": "observation"}], "comingSoon": ["Objection Handling"]}
   ],
   "summary": ["top issue 1", "top issue 2", "top issue 3"]
 }
 
-For Closer WITH Setter: set skip:true on Intent Stage and Logical Certainty, set skip:false on Recap.
-For Closer WITHOUT Setter: set skip:true on Recap, set skip:false on Intent Stage and Logical Certainty.
+For Closer WITH Setter: skip:true on Intent Stage and Logical Certainty, skip:false on Recap.
+For Closer WITHOUT Setter: skip:true on Recap, skip:false on Intent Stage and Logical Certainty.
 
 TRANSCRIPT:
 \${transcript.substring(0, 12000)}`;
