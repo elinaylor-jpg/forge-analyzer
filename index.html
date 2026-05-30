@@ -1284,10 +1284,26 @@ ${transcript.substring(0, 12000)}`;
       return parsed;
     } else { jsonStr = raw; }
   } catch(e) { jsonStr = raw; }
-  const clean = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
-  const jsonMatch = clean.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("No JSON found in response");
-  return JSON.parse(jsonMatch[0]);
+  
+  // Aggressively find JSON - try multiple strategies
+  jsonStr = jsonStr.replace(/```json/g, "").replace(/```/g, "").trim();
+  
+  // Strategy 1: find first { to last }
+  const firstBrace = jsonStr.indexOf('{');
+  const lastBrace = jsonStr.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    try {
+      return JSON.parse(jsonStr.slice(firstBrace, lastBrace + 1));
+    } catch(e) {}
+  }
+  
+  // Strategy 2: regex match
+  const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try { return JSON.parse(jsonMatch[0]); } catch(e) {}
+  }
+  
+  throw new Error("Could not parse response. Please try again.");
 }
 
 async function saveCall() {
