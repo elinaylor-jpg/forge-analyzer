@@ -1145,121 +1145,43 @@ function parseTimedText(xml) {
 
 async function analyzeWithClaude(transcript, callType) {
   const isWithSetter = callType === 'closer_with_setter';
-  
-  const recapSection = `RECAP:
-The closer should acknowledge the prospect's situation at the start — their goal, current strategy, and problem.
-GOOD: Closer clearly references the prospect's goal and problem from prior context
-YELLOW: Vague or generic recap that does not show understanding of the specific situation
-RED: No recap at all — closer jumped straight into questions with zero context`;
 
-  const intentSection = `INTENT STAGE:
-1. OPENER — Did the call start casually and naturally? Not robotic, not immediately pitching.
-GOOD: Relaxed natural opener, prospect felt comfortable
-YELLOW: Slightly stiff but acceptable
-RED: Robotic, scripted, or immediately business-focused with no warmth
+  const prompt = `Analyze this sales call. Return ONLY a JSON object. No text before or after. No markdown.
 
-2. OVERARCHING GOAL — Did the closer find out the prospect's main goal?
-GOOD: Clear specific goal — more listings, grow business, more income, more leads, replace job, more freedom, consistent pipeline
-YELLOW: Somewhat vague goal that was never probed further
-RED: No goal established at all
+Call type: ${isWithSetter ? 'Closer with Setter' : 'Closer without Setter'}
 
-LOGICAL CERTAINTY:
-1. CURRENT STRATEGY — Did the closer find out what the prospect is doing NOW to achieve their goal?
-GOOD: Specific current approach identified (referrals, open houses, cold calling, sphere of influence, etc.)
-YELLOW: General answer that was not probed
-RED: Never asked or answered
+${isWithSetter ? `Evaluate these sections (set skip:true for Intent Stage and Logical Certainty):
+- RECAP: Did closer acknowledge prospect's situation/problem at start?
+- EMOTIONAL CERTAINTY: See criteria below
+- PITCH & CLOSE: See criteria below` : `Evaluate these sections (set skip:true for Recap):
+- INTENT STAGE: Casual opener + got overarching goal?
+- LOGICAL CERTAINTY: Current strategy + specific problem + expanded pain?
+- EMOTIONAL CERTAINTY: See criteria below
+- PITCH & CLOSE: See criteria below`}
 
-2. PROBLEM/CATALYST — Did a real specific problem come up?
-GOOD: Specific problem — inconsistent referrals, open houses not generating enough, no structure on calls, can't rely on market, lacking confidence on objections
-YELLOW: Somewhat vague problem that was not explored enough
-RED: No real problem surfaced — only "I want to grow" type answers with nothing more
+EMOTIONAL CERTAINTY criteria:
+1. RATIONAL: Did closer ask why prospect wants advanced help vs continuing current approach? Good answer = faster results, need structure, current way not working
+2. WHAT PREVENTED YOU: Did closer ask what stopped prospect from getting help sooner? Did they get a real answer?
+3. BELIEF CHANGE: Did closer challenge or reframe the prevented answer? Good = prospect gave strong shifted answer or acknowledged old belief was wrong
+4. FUTURE PACE: Did prospect share 2+ specific things that would be different if problem solved? Vague = yellow, none = issue
+5. CONSEQUENCE: Did prospect acknowledge specific consequences of not changing? Vague = yellow, none = issue
 
-3. EXPAND THE PAIN — Did the closer go deeper on the problem?
-GOOD: Closer probed with what do you mean, how long, impact question — prospect revealed more detail and felt the problem
-YELLOW: Some probing but stopped short — impact not fully established
-RED: Accepted the problem answer and moved on with no follow-up`;
+PITCH & CLOSE criteria:
+1. COMMITMENT: Did closer get prospect to say they won't settle for current situation?
+2. WHY NOW: Did closer challenge why act now vs wait? Flag if missing.
+3. RESPONSIBILITY: Did closer establish it is prospect's responsibility?
 
-  const emotionalSection = `EMOTIONAL CERTAINTY:
+Rating: "good" = strong, "yellow" = weak/vague, "issue" = missing or bad
 
-1. RATIONAL — Did the closer ask why the prospect is looking for outside/advanced help rather than continuing with their current approach?
-GOOD: Prospect gave a strong answer — I'll get there faster, need more structure, tired of figuring it out alone, current approach is not efficient enough, want to shortcut the learning curve
-YELLOW: Prospect gave a vague answer like "just wanted to see what's out there" — not probed further
-RED: Topic never came up at all
+For each item include a short quote from the transcript as evidence.
 
-2. WHAT PREVENTED YOU — Did the closer ask what stopped the prospect from getting help sooner?
-GOOD: Real honest answer from prospect — did not know where to start, did not have time, was not sure it would work, other priorities
-YELLOW: Surface-level answer that was not probed
-RED: Never asked
-
-3. BELIEF CHANGE — After what prevented you, did the closer challenge or reframe that belief?
-GOOD: Strong outcome — either prospect gave a powerful shifted answer (hit a breaking point, need to prioritize now, can't keep doing this alone) OR closer reframed the belief and prospect acknowledged their old thinking was wrong
-YELLOW: Some attempt to address the belief but prospect's answer was still weak or uncommitted
-RED: Closer accepted the prevented answer and moved straight on — no challenge, no reframe, no follow-up
-
-4. FUTURE PACE (GOALS) — Did the prospect share specific things that would be different if the problem was solved?
-GOOD: 2 or more specific tangible outcomes — consistent listings, specific income number, less stress about pipeline, not doing open houses on weekends, knowing what to say on every call, freedom from market dependency
-YELLOW: Only 1 specific thing, or answers were somewhat vague but had some substance
-RED: Only completely vague answers like I'd be successful or things would be better, or goals never came up
-
-5. CONSEQUENCE — Did the prospect acknowledge what happens if nothing changes?
-GOOD: Specific consequences — keep losing listings to competitors, still stressed about income, another year without hitting targets, business stays stuck
-YELLOW: Prospect acknowledged some downside but it felt surface-level or uncommitted
-RED: Consequences never came up, or prospect seemed completely unbothered`;
-
-  const pitchSection = `PITCH & CLOSE:
-
-1. COMMITMENT — Did the closer get the prospect to say they do not want to stay in their current situation?
-GOOD: Prospect clearly said they are not willing to settle — strong verbal commitment
-YELLOW: Soft agreement that was not fully tied down
-RED: Never asked — closer moved to pitch without getting commitment
-
-2. WHY NOW — Did the closer address why the prospect should act now rather than waiting?
-GOOD: Closer challenged the timing and prospect gave a real reason why now is the moment
-YELLOW: Touched on timing but did not fully land it
-RED: Never addressed — this is important, always flag if missing
-
-3. RESPONSIBILITY — Did the closer establish it is the prospect's responsibility to make the change?
-GOOD: Prospect took ownership — acknowledged it is on them
-YELLOW: Implied but not explicitly tied down
-RED: Never established`;
-
-  const sectionsToEvaluate = isWithSetter 
-    ? recapSection + "\n\n" + emotionalSection + "\n\n" + pitchSection
-    : intentSection + "\n\n" + emotionalSection + "\n\n" + pitchSection;
-
-  const prompt = `You are a sales call analyst. Analyze the transcript below against the Impact Formula.
-
-RULES:
-- Read the ENTIRE transcript carefully before evaluating anything
-- Judge based on OUTCOMES and ANSWERS — not on specific words or script lines used
-- For every observation, quote the EXACT line from the transcript that supports your judgment
-- Be accurate — do not be too harsh or too lenient
-- Use three ratings: "good" (strong), "yellow" (weak or could be stronger), "issue" (genuinely missing or bad)
-- Only mark something as issue if you are confident it was genuinely absent or bad
-
-CALL TYPE: ${isWithSetter ? 'Closer with Setter — evaluate Recap, Emotional Certainty, Pitch & Close only' : 'Closer without Setter — evaluate Intent Stage, Logical Certainty, Emotional Certainty, Pitch & Close'}
-
-${sectionsToEvaluate}
-
-Extract the prospect's name from the transcript first.
-
-Respond ONLY in this exact JSON — no other text before or after:
-{
-  "prospectName": "name",
-  "sections": [
-    {"title": "Recap", "skip": ${!isWithSetter}, "items": [{"type": "good|yellow|issue", "text": "observation — \"exact quote from transcript\""}]},
-    {"title": "Intent Stage", "skip": ${isWithSetter}, "items": [{"type": "good|yellow|issue", "text": "observation — \"exact quote from transcript\""}]},
-    {"title": "Logical Certainty", "skip": ${isWithSetter}, "items": [{"type": "good|yellow|issue", "text": "observation — \"exact quote from transcript\""}]},
-    {"title": "Emotional Certainty", "items": [{"type": "good|yellow|issue", "text": "observation — \"exact quote from transcript\""}]},
-    {"title": "Pitch & Close", "items": [{"type": "good|yellow|issue", "text": "observation — \"exact quote from transcript\""}]}
-  ],
-  "summary": ["top issue 1", "top issue 2", "top issue 3"]
-}
+Return this exact JSON structure:
+{"prospectName":"[name from transcript]","sections":[{"title":"Recap","skip":${!isWithSetter},"items":[{"type":"good","text":"observation - quote"}]},{"title":"Intent Stage","skip":${isWithSetter},"items":[{"type":"good","text":"observation - quote"}]},{"title":"Logical Certainty","skip":${isWithSetter},"items":[{"type":"good","text":"observation - quote"}]},{"title":"Emotional Certainty","items":[{"type":"good","text":"observation - quote"}]},{"title":"Pitch & Close","items":[{"type":"good","text":"observation - quote"}]}],"summary":["issue1","issue2","issue3"]}
 
 TRANSCRIPT:
-${transcript.substring(0, 12000)}`;
+${transcript.substring(0, 10000)}`;
 
-  const response = await fetch('/.netlify/functions/claude', {
+    const response = await fetch('/.netlify/functions/claude', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
