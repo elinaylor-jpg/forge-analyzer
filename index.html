@@ -1151,9 +1151,9 @@ YOUR ONLY JOB: Read the full conversation and identify what outcomes were or wer
 
 CRITICAL: Be generous in recognizing when something was done. If the prospect gave the right answer at any point in the conversation — even if the closer got there in an unconventional way — it counts. Only flag something as missing if it genuinely did not happen at all, or if the answer the prospect gave was genuinely weak/vague.
 
-CALL TYPE: \${typeLabel}
+CALL TYPE: ${typeLabel}
 
-\${callType === 'closer_with_setter' ? `
+${callType === 'closer_with_setter' ? `
 RECAP (only for Closer with Setter):
 CHECK: Did the closer show at the start of the call that they understood the prospect's situation — their current strategy, what's not working, and why they're on the call?
 GOOD: Any reference to what was discussed before, what the prospect is dealing with, or confirmation of their goal/problem
@@ -1230,7 +1230,7 @@ For Closer WITH Setter: skip:true on Intent Stage and Logical Certainty, skip:fa
 For Closer WITHOUT Setter: skip:true on Recap, skip:false on Intent Stage and Logical Certainty.
 
 TRANSCRIPT:
-\${transcript.substring(0, 12000)}`;
+${transcript.substring(0, 12000)}`;
 
   const response = await fetch('/.netlify/functions/claude', {
     method: 'POST',
