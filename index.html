@@ -1211,8 +1211,21 @@ ${transcript.substring(0, 12000)}`;
     })
   });
 
-  const data = await response.json();
-  const text = data.content ? data.content.map(i => i.text || '').join('') : (data.body || '');
+  const raw = await response.text();
+  let text = '';
+  try {
+    const data = JSON.parse(raw);
+    if (data.content) {
+      text = data.content.map(i => i.text || '').join('');
+    } else if (data.body) {
+      const inner = JSON.parse(data.body);
+      text = inner.content.map(i => i.text || '').join('');
+    } else {
+      text = raw;
+    }
+  } catch(e) {
+    text = raw;
+  }
   const clean = text.replace(/```json|```/g, '').trim();
   return JSON.parse(clean);
 }
